@@ -1,62 +1,40 @@
 package main
 
 import (
-	"errors"
 	"log"
-	"net/http"
-	"slices"
+	"os"
 
-	"github.com/gofiber/adaptor/v2"
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gorilla/websocket"
-
-	_ "github.com/lib/pq"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/i-use-mint-btw/handlers"
+	"github.com/i-use-mint-btw/middleware"
+	"github.com/i-use-mint-btw/storage"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		allowedOrigins := []string{"http://localhost:5500"}
-		origin := r.Header.Get("Origin")
-		return slices.Contains(allowedOrigins, origin)
-	},
-}
-
-func websocketHandler(w http.ResponseWriter, r *http.Request) {
-	sock, err := upgrader.Upgrade(w, r, nil)
+func main() {
+	err := storage.InitDB()
 
 	if err != nil {
-		log.Fatal("Failed to upgrade connection")
+		log.Fatal("Failed to initialize database. err: ", err)
 	}
-	defer sock.Close()
 
-	for {
-		msgType, msg, err := sock.ReadMessage()
+	clientURL := os.Getenv("CLIENT_URL")
 
-		if err != nil {
-			log.Print("Failed to parse message from client")
-		}
-
-		if msgType == websocket.CloseMessage {
-			log.Print("client disconnected")
-		}
-
-		log.Print("Message from client: ", msg)
-	}
-}
-
-func main() {
 	app := fiber.New()
 
-	app.Get("/api/", func (c *fiber.Ctx) error {
+	app.Use(cors.New(cors.Config{AllowOrigins: clientURL}))
+	app.Use("/api/document/edit", middleware.EnforceWebsocketConnection)
+
+	app.Post("/api/document/create", handlers.CreateDocument)
+	app.Get("/api/document/edit/:id", websocket.New(handlers.EditDocument))
+
+	app.Get("/api/", func(c *fiber.Ctx) error {
 		return c.SendString("Welcome to the home route")
 	})
 
-	app.Post("/api/document", func (c *fiber.Ctx) error {
-		// Create a document in the database and return the id
-		return errors.New("")
-	})
-
-	app.Options("/api/document/:id/", adaptor.HTTPHandlerFunc(websocketHandler))
-
 	log.Fatal(app.Listen(":2680"))
 }
+
+// /api/document/create - Creates a new document and returns the id
+// /api/document/:id/edit - Edits a document with a given id
