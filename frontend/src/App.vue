@@ -8,8 +8,6 @@ import { useGlobalStore } from "./stores/global";
 
 const input = ref("# hello");
 
-onUpdated()
-
 const store = useGlobalStore();
 </script>
 

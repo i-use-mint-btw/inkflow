@@ -10,6 +10,7 @@ const store = useGlobalStore()
   <div class="sidebar" :style="{color: getTextColor()}">
     <h1 class="logo">Inflow</h1>
     <p>Documents:</p>
+    <button class="bg-red-400 active:bg-red-800">Click me</button>
     <div class="toggle-dark-mode-button-container">
       <ToggleButton :action="store.toggleDarkMode" />
     </div>

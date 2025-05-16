@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"slices"
@@ -48,6 +49,11 @@ func main() {
 
 	app.Get("/api/", func (c *fiber.Ctx) error {
 		return c.SendString("Welcome to the home route")
+	})
+
+	app.Post("/api/document", func (c *fiber.Ctx) error {
+		// Create a document in the database and return the id
+		return errors.New("")
 	})
 
 	app.Options("/api/document/:id/", adaptor.HTTPHandlerFunc(websocketHandler))
