@@ -1,28 +1,21 @@
 package handlers
 
 import (
-	"database/sql"
-	"fmt"
 	"log"
-	"strconv"
 
-	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/i-use-mint-btw/models"
 	"github.com/i-use-mint-btw/storage"
 )
 
-type Document struct {
-	Title string `json:"title"`
-}
-
 func CreateDocument(c *fiber.Ctx) error {
-	document := new(Document)
+	document := new(models.Document)
 	err := c.BodyParser(document)
 
 	if err != nil {
 		return c.Status(404).JSON(&fiber.Map{
 			"success": false,
-			"error": "Failed to parse json",
+			"error":   "Failed to parse json",
 		})
 	}
 
@@ -34,7 +27,7 @@ func CreateDocument(c *fiber.Ctx) error {
 		log.Println(err)
 		c.JSON(&fiber.Map{
 			"success": false,
-			"error": "Internal",
+			"error":   "Internal",
 		})
 	}
 
@@ -42,46 +35,33 @@ func CreateDocument(c *fiber.Ctx) error {
 
 	return c.JSON(&fiber.Map{
 		"success": true,
-		"id": id,
+		"id":      id,
 	})
 }
 
-func EditDocument(c *websocket.Conn) {
-	documentID := c.Params("id")
+func UpdateDocument(id string, content []byte) error {
+	_, err := storage.DB.Exec("UPDATE documents SET content=$1 WHERE id=$2", content, id)
 
-	log.Println("Connection from: ", c.RemoteAddr())
-
-	for {
-		mt, msg, err := c.ReadMessage()
-
-		if err != nil {
-			log.Print("Error when reading message", msg)
-			break
-		}
-
-		if mt == websocket.CloseMessage {
-			c.Close()
-			break
-		}
-
-		_, err = storage.DB.Exec("UPDATE documents SET content=$1 WHERE id=$2", msg, documentID)
-
-		if err != nil {
-			log.Print("Failed to update document")
-		}
-
-		row := storage.DB.QueryRow("SELECT content FROM documents WHERE id=$1", documentID)
-
-		if row.Err() == sql.ErrNoRows {
-			log.Print(err)
-			c.Close()
-			break
-		}
-
-		
-
-		c.WriteMessage(websocket.TextMessage, []byte(msg))
+	if err != nil {
+		log.Print("Failed to update document")
+		return err
 	}
+
+	return nil
+}
+
+func ReadDocument(id string) (string, error) {
+	row := storage.DB.QueryRow("SELECT content FROM documents WHERE id=$1", id)
+
+	var content string
+	err := row.Scan(&content)
+
+	if err != nil {
+		log.Print("Failed to read document")
+		return "", err
+	}
+
+	return content, nil
 }
 
 /*
