@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
@@ -19,13 +18,7 @@ func InitDB() error {
 		log.Fatal("Failed to load environment variables")
 	}
 
-	dbUser := os.Getenv("DB_USER")
-	dbName := os.Getenv("DB_NAME")
-	dbPass := os.Getenv("DB_PASS")
-
-	connStr := fmt.Sprintf("user=%s dbname=%s password=%s sslmode=disable", dbUser, dbName, dbPass)
-
-	DB, err = sql.Open("postgres", connStr)
+	DB, err = sql.Open("postgres", os.Getenv("DB_URL"))
 
 	if err != nil {
 		return err

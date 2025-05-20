@@ -1,3 +1,1 @@
-import "dotenv"
-
-export const API_URL = "http://localhost:2680"
+export const API_URL = "backend-production-cd54.up.railway.app"
