@@ -12,20 +12,7 @@ const emit = defineEmits(['update:modelValue'])
 
 
 <template>
-  <div class="editor-window">
-    <textarea class="editor-window-textarea" name="Markdown editor" :style="{color: getTextColor()}" :value="modelValue" @input="emit('update:modelValue', $event.target.value)"></textarea>
-  </div>
+  <section class="w-1/2 h-full bg-transparent border-r-2 border-gray-400 overflow-hidden">
+    <textarea class="focus:outline-none w-full h-full p-4 resize-none" name="Markdown editor" :style="{color: getTextColor()}" :value="modelValue" @input="emit('update:modelValue', $event.target?.value)"></textarea>
+  </section>
 </template>
-
-<style scoped>
-  .editor-window-textarea {
-    width: 100%;
-    height: 100%;
-    background-color: transparent;
-    resize: none;
-  }
-
-  .editor-window-textarea:focus {
-    outline: none;
-  }
-</style>

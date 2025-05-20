@@ -1,8 +1,45 @@
 @import "tailwindcss";
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+@layer base {
+  h1 {
+    font-size: 32px;
+    font-weight: bolder;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: bolder;
+  }
+
+  h3 {
+    font-size: 24px;
+    font-weight: bolder;
+  }
+
+  h4 {
+    font-size: 20px;
+    font-weight: bolder;
+  }
+
+  h5 {
+    font-size: 16px;
+    font-weight: bolder;
+  }
+
+  h6 {
+    font-size: 14px;
+    font-weight: bolder;
+  }
+
+  a {
+    color: rgb(2, 124, 255);
+    text-decoration: underline;
+  }
 }

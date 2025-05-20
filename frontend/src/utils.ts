@@ -6,9 +6,9 @@ export function getTextColor() {
 }
 
 export function debounce(callback: () => void, delayInMs: number) {
-  let timer
+  let timer: any
   return function() {
     clearTimeout(timer)
-    setTimeout(callback, delayInMs)
+    timer = setTimeout(callback, delayInMs)
   }
 }
