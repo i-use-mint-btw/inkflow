@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useGlobalStore } from "../stores/global";
 
-const props = defineProps<{ action: Function }>();
+defineProps<{ action: Function }>();
 const store = useGlobalStore();
 </script>
 
