@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import EditorWindow from "./components/EditorWindow.vue";
+import { VMarkdownEditor } from "vue3-markdown";
+import "vue3-markdown/dist/vue3-markdown.css";
 import Header from "./components/Header.vue";
 import PreviewWindow from "./components/PreviewWindow.vue";
 import { API_URL } from "./constants";
@@ -21,7 +22,7 @@ onMounted(() => {
 
   const syncMarkdown = debounce(() => {
     sock.send(input.value);
-  }, 1000);
+  }, 800);
 
   sock.addEventListener("markdownChange", syncMarkdown);
   watch(input, () => sock.dispatchEvent(markdownChangeEvent));
@@ -35,10 +36,12 @@ onMounted(() => {
   <div class="h-screen w-screen">
     <Header />
     <main class="flex w-screen h-11/12">
-      <EditorWindow v-model="input" />
-      <PreviewWindow :content="input" /><!-- 
-      <input type="text" v-model="documentTitle" placeholder="Document title" />
-      <button @click="createDocument">Create new document</button> -->
+      <section
+        class="w-1/2 h-full bg-transparent border-r-1 border-gray-400 overflow-hidden"
+      >
+        <VMarkdownEditor v-model="input" locale="en" />
+      </section>
+      <PreviewWindow :content="input" />
     </main>
   </div>
 </template>

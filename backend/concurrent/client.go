@@ -1,4 +1,4 @@
-package helpers
+package concurrent
 
 import (
 	"log"
@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gofiber/contrib/websocket"
-	"github.com/i-use-mint-btw/handlers"
 )
 
 // Accept an http request
@@ -16,7 +15,7 @@ import (
 
 type Client struct {
 	Conn *websocket.Conn
-	Send chan []byte
+	Send chan *Broadcast
 	Hub  *Hub
 }
 
@@ -47,10 +46,9 @@ func (c *Client) ReadPump(wg *sync.WaitGroup) {
 		wg.Done()
 	}()
 
-	c.Conn.SetReadLimit(maxMessageSize)
+	// c.Conn.SetReadLimit(maxMessageSize) // Disable to stop message bottlenecking
 	c.Conn.SetReadDeadline(time.Now().Add(pongWait))
 	c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
-	documentID := c.Conn.Params("id")
 
 	for {
 		_, message, err := c.Conn.ReadMessage()
@@ -62,21 +60,8 @@ func (c *Client) ReadPump(wg *sync.WaitGroup) {
 			break
 		}
 
-		err = handlers.UpdateDocument(documentID, message)
-
-		if err != nil {
-			log.Printf("Failed to persist client message (%v) in the database", message)
-			break
-		}
-
-		content, err := handlers.ReadDocument(documentID)
-
-		if err != nil {
-			log.Println("Failed to read document")
-			break
-		}
-
-		c.Hub.Broadcast <- []byte(content)
+		c.Hub.Broadcast <- &Broadcast{client: c, message: message}
+		wg.Wait()
 	}
 }
 
@@ -91,7 +76,7 @@ func (c *Client) WritePump(wg *sync.WaitGroup) {
 
 	for {
 		select {
-		case message, ok := <-c.Send:
+		case broadcast, ok := <-c.Send:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
@@ -103,13 +88,14 @@ func (c *Client) WritePump(wg *sync.WaitGroup) {
 			if err != nil {
 				return
 			}
-			w.Write(message)
+			w.Write(broadcast.message)
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.Send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
-				w.Write(<-c.Send)
+				broadcast := <-c.Send
+				w.Write(broadcast.message)
 			}
 
 			if err := w.Close(); err != nil {
@@ -123,5 +109,3 @@ func (c *Client) WritePump(wg *sync.WaitGroup) {
 		}
 	}
 }
-
-// ...existing code...

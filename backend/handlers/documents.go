@@ -2,97 +2,58 @@ package handlers
 
 import (
 	"log"
+	"net/http"
+	"sync"
 
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
-	"github.com/i-use-mint-btw/models"
-	"github.com/i-use-mint-btw/storage"
+	"github.com/i-use-mint-btw/api"
+	"github.com/i-use-mint-btw/concurrent"
+	"github.com/i-use-mint-btw/globals"
+	"github.com/i-use-mint-btw/services"
 )
 
-func CreateDocument(c *fiber.Ctx) error {
-	document := new(models.Document)
-	err := c.BodyParser(document)
+func WebsocketHandler(c *websocket.Conn) {
+	defer func() {
+		log.Println("Websocket closed")
+	}()
 
-	if err != nil {
-		return c.Status(404).JSON(&fiber.Map{
-			"success": false,
-			"error":   "Failed to parse json",
-		})
+	client := &concurrent.Client{
+		Conn: c,
+		Send: make(chan *concurrent.Broadcast, 256),
+		Hub: globals.GlobalHub,
 	}
 
-	row := storage.DB.QueryRow("INSERT INTO documents (title) VALUES ($1) RETURNING id", document.Title)
-	var id string
-	err = row.Scan(&id)
+	globals.GlobalHub.Register <- client
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go client.WritePump(&wg)
+	go client.ReadPump(&wg)
+	wg.Wait()
+}
+
+func PostDocument(c *fiber.Ctx) error {
+	var document api.CreateDocumentDTO
+	err := c.BodyParser(&document)
 
 	if err != nil {
-		log.Println(err)
-		c.JSON(&fiber.Map{
-			"success": false,
-			"error":   "Internal",
-		})
+		return c.Status(fiber.StatusUnprocessableEntity).JSON(api.NewFailureResponse("Poorly formatted request"))
 	}
 
-	log.Print(id)
+	documentID, err := services.CreateDocument(document.Title)
 
-	return c.JSON(&fiber.Map{
+	if err != nil {
+		log.Println("Failed to create document: ", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(api.NewFailureResponse("Internal server error"))
+	}
+
+	return c.Status(http.StatusCreated).JSON(&fiber.Map{
 		"success": true,
-		"id":      id,
+		"message": "Document Created successfully",
+		"data": fiber.Map{
+			"id":    documentID,
+			"title": document.Title,
+		},
 	})
 }
-
-func UpdateDocument(id string, content []byte) error {
-	_, err := storage.DB.Exec("UPDATE documents SET content=$1 WHERE id=$2", content, id)
-
-	if err != nil {
-		log.Print("Failed to update document")
-		return err
-	}
-
-	return nil
-}
-
-func ReadDocument(id string) (string, error) {
-	row := storage.DB.QueryRow("SELECT content FROM documents WHERE id=$1", id)
-
-	var content string
-	err := row.Scan(&content)
-
-	if err != nil {
-		log.Print("Failed to read document")
-		return "", err
-	}
-
-	return content, nil
-}
-
-/*
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		allowedOrigins := []string{"http://localhost:5500"}
-		origin := r.Header.Get("Origin")
-		return slices.Contains(allowedOrigins, origin)
-	},
-}
-
-func websocketHandler(w http.ResponseWriter, r *http.Request) {
-	sock, err := upgrader.Upgrade(w, r, nil)
-
-	if err != nil {
-		log.Fatal("Failed to upgrade connection")
-	}
-	defer sock.Close()
-
-	for {
-		msgType, msg, err := sock.ReadMessage()
-
-		if err != nil {
-			log.Print("Failed to parse message from client")
-		}
-
-		if msgType == websocket.CloseMessage {
-			log.Print("client disconnected")
-		}
-
-		log.Print("Message from client: ", msg)
-	}
-}
-*/

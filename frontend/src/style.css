@@ -1,44 +1,45 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  font-family: 'Roboto', sans-serif;
 }
 
 @layer base {
   h1 {
     font-size: 32px;
-    font-weight: bolder;
+    font-weight: 600;
+    margin-bottom: 20px;
   }
 
   h2 {
     font-size: 28px;
-    font-weight: bolder;
+    font-weight: 600;
   }
 
   h3 {
     font-size: 24px;
-    font-weight: bolder;
+    font-weight: 600;
   }
 
   h4 {
     font-size: 20px;
-    font-weight: bolder;
+    font-weight: 600;
   }
 
   h5 {
     font-size: 16px;
-    font-weight: bolder;
+    font-weight: 600;
   }
 
   h6 {
     font-size: 14px;
-    font-weight: bolder;
+    font-weight: 600;
   }
 
   a {
