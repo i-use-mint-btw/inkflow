@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { API_URL } from "@/constants";
+import { useGlobalStore } from "@/stores/global";
 import { ref } from "vue";
 import { AiFillFileAdd } from "vue-icons-plus/ai";
 import { FaShare } from "vue-icons-plus/fa";
 import CreateDocumentModal from "./CreateDocumentModal.vue";
-import { useGlobalStore } from "@/stores/global";
+import { GiHamburgerMenu } from "vue-icons-plus/gi";
 
 const showModal = ref(false);
 const store = useGlobalStore();
+const shouldRerender = ref(false);
 
 function toggleModal() {
   showModal.value = !showModal.value;
 }
 
 async function createDocument(title: string) {
+  showModal.value = false;
   const res = await fetch(API_URL + "/document/create", {
     method: "POST",
     headers: {
@@ -22,7 +25,6 @@ async function createDocument(title: string) {
     body: JSON.stringify({ Title: title }),
   });
   const document = await res.json();
-  showModal.value = false;
 
   let localStorageDocuments = localStorage.getItem("documents");
 
@@ -34,13 +36,13 @@ async function createDocument(title: string) {
   const documents = JSON.parse(localStorageDocuments!) as any[];
   documents.push(document.data);
   localStorage.setItem("documents", JSON.stringify(documents));
-  location.reload();
+  shouldRerender.value = !shouldRerender.value;
 }
 
 async function fetchExistingDocument(id: string) {
+  showModal.value = false;
   const res = await fetch(API_URL + "/document/read/" + id);
   const document = await res.json();
-  showModal.value = false;
 
   let localStorageDocuments = localStorage.getItem("documents");
 
@@ -52,12 +54,12 @@ async function fetchExistingDocument(id: string) {
   const documents = JSON.parse(localStorageDocuments) as any[];
   documents.push(document.data);
   localStorage.setItem("documents", JSON.stringify(documents));
-  window.location.reload()
+  shouldRerender.value = !shouldRerender.value;
 }
 
 function copyDocumentLink() {
-  const link = location.href + store.selectedDocument.id
-  console.log(link)
+  const link = location.href + store.selectedDocument.id;
+  console.log(link);
 
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard
@@ -77,7 +79,7 @@ function copyDocumentLink() {
     document.body.removeChild(tempInput);
     console.log("Link copied to clipboard (fallback method)");
   }
-  alert("Link copied to clipboard")
+  alert("Link copied to clipboard");
 }
 </script>
 
@@ -92,7 +94,7 @@ function copyDocumentLink() {
     class="flex w-screen h-1/12 border-b-1 px-4 md:px-16 justify-between border-gray-400 items-center"
   >
     <h1 class="font-medium" style="font-weight: 400; margin: 0">Inkflow</h1>
-    <h2>
+    <h2 class="hidden md:block">
       {{
         Object.keys(store.selectedDocument).length === 0
           ? "Choose a document"
@@ -112,6 +114,9 @@ function copyDocumentLink() {
       >
         <FaShare class="text-white" />
       </button>
+      <!-- <button class="block md:hidden" @click="store.toggleSideMenu">
+        <GiHamburgerMenu />
+      </button> -->
       <!-- <button
         class="bg-blue-300 dark:bg-transparent p-2 rounded-full ml-4 text-blue-600 dark:text-yellow-200"
         @click="store.toggleDarkMode"

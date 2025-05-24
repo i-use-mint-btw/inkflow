@@ -15,7 +15,7 @@ function extractID(url: string) {
     @click="toggleModal"
     class="absolute top-0 bottom-0 right-0 left-0 flex items-center justify-center"
   >
-    <div class="w-1/6 bg-gray-100 p-4 rounded-md" @click="e => e.stopPropagation()">
+    <div class=" w-5/6 md:w-1/6 bg-gray-100 p-4 rounded-md" @click="e => e.stopPropagation()">
       <label for="document-title" class="block mb-4 focus">Enter a title: </label>
       <!-- @vue-ignore -->
       <input

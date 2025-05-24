@@ -51,7 +51,7 @@ watch(
       >
         <PreviewWindow :content="input" />
       </section>
-      <aside class="hidden md:block w-3/16 h-full">
+      <aside class=" md:w-3/16 h-full">
         <Sidebar />
       </aside>
     </main>
