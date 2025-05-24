@@ -9,19 +9,9 @@ const store = useGlobalStore();
   <button
     class="container"
     @click="action()"
-    :style="{
-      backgroundColor: store.darkMode
-        ? store.colorPallete.accentDark
-        : store.colorPallete.accentLight,
-    }"
   >
     <div
       :class="{ circle: true, active: store.darkMode, inactive: !store.darkMode }"
-      :style="{
-        backgroundColor: store.darkMode
-          ? store.colorPallete.backgroundLight
-          : store.colorPallete.backgroundDark,
-      }"
     ></div>
   </button>
 </template>
