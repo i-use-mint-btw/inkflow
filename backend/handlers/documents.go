@@ -72,3 +72,23 @@ func PostDocument(c *fiber.Ctx) error {
 		},
 	})
 }
+
+func GetDocument(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	title, err := services.ReadDocumentTitle(id)
+
+	if err != nil {
+		log.Println("Failed to find document: ", err)
+		return c.Status(fiber.StatusNotFound).JSON(api.NewFailureResponse("Document not found"))
+	}
+
+	return c.Status(http.StatusOK).JSON(&fiber.Map{
+		"success": true,
+		"message": "ok",
+		"data": fiber.Map{
+			"id":    id,
+			"title": title,
+		},
+	})
+}

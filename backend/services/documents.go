@@ -44,6 +44,20 @@ func ReadDocument(id string) (string, error) {
 	return content, nil
 }
 
+func ReadDocumentTitle(id string) (string, error) {
+	row := storage.DB.QueryRow("SELECT title FROM documents WHERE id=$1", id)
+
+	var content string
+	err := row.Scan(&content)
+
+	if err != nil {
+		log.Print("Failed to read document")
+		return "", err
+	}
+
+	return content, nil
+}
+
 /*
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {

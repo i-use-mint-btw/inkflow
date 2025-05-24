@@ -31,6 +31,7 @@ func main() {
 	app.Use("/api/document/edit", middleware.EnforceWebsocketConnection)
 	app.Post("/api/document/create", handlers.PostDocument)
 	app.Get("/api/document/edit/:id", websocket.New(handlers.WebsocketHandler))
+	app.Get("/api/document/read/:id", handlers.GetDocument)
 
 	app.Get("/api/", func(c *fiber.Ctx) error {
 		return c.SendString("Welcome to the home route")

@@ -37,6 +37,24 @@ async function createDocument(title: string) {
   location.reload();
 }
 
+async function fetchExistingDocument(id: string) {
+  const res = await fetch(API_URL + "/document/read/" + id);
+  const document = await res.json();
+  showModal.value = false;
+
+  let localStorageDocuments = localStorage.getItem("documents");
+
+  if (!localStorageDocuments) {
+    localStorage.setItem("documents", JSON.stringify([document.data]));
+    return;
+  }
+
+  const documents = JSON.parse(localStorageDocuments) as any[];
+  documents.push(document.data);
+  localStorage.setItem("documents", JSON.stringify(documents));
+  window.location.reload()
+}
+
 function copyDocumentLink() {
   const link = location.href + store.selectedDocument.id
   console.log(link)
@@ -68,6 +86,7 @@ function copyDocumentLink() {
     v-if="showModal"
     :toggleModal="toggleModal"
     :createDocument="createDocument"
+    :fetchExistingDocument="fetchExistingDocument"
   />
   <header
     class="flex w-screen h-1/12 border-b-1 px-4 md:px-16 justify-between border-gray-400 items-center"

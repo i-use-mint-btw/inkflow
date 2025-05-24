@@ -11,24 +11,30 @@ import { debounce } from "./utils";
 
 const input = ref("");
 const store = useGlobalStore();
-let sock: WebSocket = new WebSocket("")
+let sock: WebSocket | null;
 
-watch(() => store.selectedDocument.id, () => {
-  sock.close()
-  sock = new WebSocket(
-    API_URL + `/document/edit/${store.selectedDocument.id}`
-  );
+watch(
+  () => store.selectedDocument.id,
+  () => {
+    if (sock) {
+      sock.close();
+      return;
+    }
+    sock = new WebSocket(
+      API_URL + `/document/edit/${store.selectedDocument.id}`
+    );
 
-  sock.addEventListener("message", (event) => {
-    input.value = event.data;
-  });
+    sock.addEventListener("message", (event) => {
+      input.value = event.data;
+    });
 
-  const queueBroadcast = debounce(() => {
-    sock.send(input.value);
-  }, 1500);
+    const queueBroadcast = debounce(() => {
+      sock!.send(input.value);
+    }, 1500);
 
-  watch(input, queueBroadcast);
-});
+    watch(input, queueBroadcast);
+  }
+);
 </script>
 
 <template>
@@ -45,7 +51,7 @@ watch(() => store.selectedDocument.id, () => {
       >
         <PreviewWindow :content="input" />
       </section>
-      <aside class="w-3/16 h-full">
+      <aside class="hidden md:block w-3/16 h-full">
         <Sidebar />
       </aside>
     </main>
