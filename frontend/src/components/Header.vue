@@ -5,7 +5,6 @@ import { ref } from "vue";
 import { AiFillFileAdd } from "vue-icons-plus/ai";
 import { FaShare } from "vue-icons-plus/fa";
 import CreateDocumentModal from "./CreateDocumentModal.vue";
-import { GiHamburgerMenu } from "vue-icons-plus/gi";
 
 const showModal = ref(false);
 const store = useGlobalStore();
