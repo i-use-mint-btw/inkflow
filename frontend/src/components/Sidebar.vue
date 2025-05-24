@@ -1,35 +1,19 @@
 <script setup lang="ts">
-import { useGlobalStore } from "../stores/global";
-import { getTextColor } from "../utils";
-import ToggleButton from "./ToggleButton.vue";
-const store = useGlobalStore()
+import type { AppDocument } from "@/types";
+import Document from "./Document.vue";
 
+const documents = JSON.parse(localStorage.getItem("documents")!) as AppDocument[];
 </script>
 
 <template>
-  <div class="sidebar" :style="{color: getTextColor()}">
-    <h1 class="logo">Inflow</h1>
-    <p>Documents:</p>
-    <button class="bg-red-400 active:bg-red-800">Click me</button>
-    <div class="toggle-dark-mode-button-container">
-      <ToggleButton :action="store.toggleDarkMode" />
+  <div
+    class="bg-gray-100 w-full h-20 flex items-center pl-4 border-b-1 border-gray-400"
+  >
+    <h3 class="text-gray-700">My documents</h3>
+  </div>
+  <div class="w-full overflow-auto">
+    <div v-for="document of documents" >
+      <Document :data="document" />
     </div>
   </div>
 </template>
-
-<style scoped>
-  .sidebar {
-    display: grid;
-    grid-template-rows: 1fr 4fr 1fr;
-  }
-
-  .logo {
-    margin: 10px 0;
-  }
-
-  .toggle-dark-mode-button-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-</style>

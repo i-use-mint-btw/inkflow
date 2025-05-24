@@ -51,7 +51,7 @@ func (c *Client) ReadPump(wg *sync.WaitGroup) {
 	c.Conn.SetPongHandler(func(string) error { c.Conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 
 	for {
-		_, message, err := c.Conn.ReadMessage()
+		mt, message, err := c.Conn.ReadMessage()
 
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
@@ -60,8 +60,11 @@ func (c *Client) ReadPump(wg *sync.WaitGroup) {
 			break
 		}
 
+		if mt == websocket.CloseMessage {
+			break
+		}
+
 		c.Hub.Broadcast <- &Broadcast{client: c, message: message}
-		wg.Wait()
 	}
 }
 

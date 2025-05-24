@@ -21,7 +21,22 @@ func WebsocketHandler(c *websocket.Conn) {
 	client := &concurrent.Client{
 		Conn: c,
 		Send: make(chan *concurrent.Broadcast, 256),
-		Hub: globals.GlobalHub,
+		Hub:  globals.GlobalHub,
+	}
+
+	// Try to see if the document already has content in it
+	message, err := services.ReadDocument(c.Params("id"))
+
+	if err != nil {
+		log.Print("User tried to edit a document that does not exist")
+		c.Close()
+		return
+	}
+
+	err = c.WriteMessage(websocket.TextMessage, []byte(message))
+
+	if err != nil {
+		log.Print("Failed to send markdown ")
 	}
 
 	globals.GlobalHub.Register <- client

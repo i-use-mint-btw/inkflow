@@ -1,5 +1,5 @@
 package api
 
 type CreateDocumentDTO struct {
-	Title string
+	Title string `json:"title"`
 }

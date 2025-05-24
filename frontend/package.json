@@ -10,13 +10,17 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
+    "@types/markdown-it": "^14.1.2",
     "clsx": "^2.1.1",
     "dompurify": "^3.2.6",
+    "markdown-it": "^14.1.0",
+    "markdown-it-abbr": "^2.0.0",
     "marked": "^15.0.11",
     "pinia": "^3.0.2",
     "tailwind-merge": "^3.3.0",
     "tailwindcss": "^4.1.7",
     "vue": "^3.5.13",
+    "vue-icons-plus": "^0.1.8",
     "vue3-markdown": "^1.2.12"
   },
   "devDependencies": {
